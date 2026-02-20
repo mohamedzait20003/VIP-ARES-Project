@@ -1,0 +1,17 @@
+# MAVLink protocol library (ArduPilot communication)
+pymavlink>=2.4.40
+
+# Numerical computing
+numpy>=1.24.0
+
+# 3D transformations (quaternions, rotation matrices)
+transforms3d>=0.4.1
+
+# Serial port access (hardware flight controller connection)
+pyserial>=3.5
+
+# Computer vision (if used for perception tasks)
+opencv-python>=4.8.0
+
+# Plotting / debugging utilities
+matplotlib>=3.7.0
