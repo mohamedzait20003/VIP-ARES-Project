@@ -148,7 +148,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 4. Initialize rosdep and install dependencies
+### 3. Initialize rosdep and install dependencies
 
 ```bash
 cd ~/ARES-Project
@@ -157,14 +157,14 @@ rosdep update
 rosdep install --from-paths src --ignore-src -r -y
 ```
 
-### 5. Build the workspace
+### 4. Build the workspace
 
 ```bash
 cd ~/ros2_ws
 colcon build --symlink-install
 ```
 
-### 6. Source the workspace
+### 5. Source the workspace
 
 ```bash
 source ~/ros2_ws/install/setup.bash
