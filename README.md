@@ -5,6 +5,48 @@
 Maintainer: Mohammed Zaitoun — mzaitoun@purdue.edu  
 License: MIT
 
+> **Environment:** This project is developed and run inside **WSL2** (Windows Subsystem for Linux) on Ubuntu 24.04.
+
+---
+
+## WSL2 Setup
+
+Before anything else, make sure you are on **WSL2** (not WSL1) and running **Ubuntu 24.04**.
+
+### Verify WSL version (run in PowerShell on Windows)
+
+```powershell
+wsl --list --verbose
+```
+
+If the VERSION column shows `1`, upgrade:
+
+```powershell
+wsl --set-version Ubuntu-24.04 2
+```
+
+### Configure your git identity (one-time, inside WSL)
+
+```bash
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+```
+
+### Enable systemd (required by some ROS2 services)
+
+Add the following to `/etc/wsl.conf` inside WSL (create the file if it doesn't exist):
+
+```ini
+[boot]
+systemd=true
+```
+
+Then restart WSL from PowerShell:
+
+```powershell
+wsl --shutdown
+```
+
 ---
 
 ## Prerequisites
@@ -13,15 +55,15 @@ Make sure the following are installed on your system before setting up this work
 
 ### 1. ROS2
 
-This package targets **ROS2 Humble** (Ubuntu 22.04) or **ROS2 Iron/Jazzy** (Ubuntu 24.04).
+This package targets **ROS2 Jazzy** (Ubuntu 24.04).
 
 Follow the official installation guide:  
-https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html
+https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debians.html
 
 Source your ROS2 installation in every new terminal (or add it to `~/.bashrc`):
 
 ```bash
-source /opt/ros/humble/setup.bash
+source /opt/ros/jazzy/setup.bash
 ```
 
 ### 2. MAVROS
@@ -30,25 +72,25 @@ MAVROS provides the bridge between ROS2 and ArduPilot via MAVLink.
 
 ```bash
 sudo apt update
-sudo apt install ros-humble-mavros ros-humble-mavros-extras
+sudo apt install ros-jazzy-mavros ros-jazzy-mavros-extras
 ```
 
 Install the required GeographicLib datasets (needed by MAVROS):
 
 ```bash
-sudo /opt/ros/humble/lib/mavros/install_geographiclib_datasets.sh
+sudo /opt/ros/jazzy/lib/mavros/install_geographiclib_datasets.sh
 ```
 
 ### 3. Additional ROS2 Dependencies
 
 ```bash
 sudo apt install \
-  ros-humble-tf2-ros \
-  ros-humble-tf2-geometry-msgs \
-  ros-humble-geometry-msgs \
-  ros-humble-sensor-msgs \
-  ros-humble-nav-msgs \
-  ros-humble-std-msgs
+  ros-jazzy-tf2-ros \
+  ros-jazzy-tf2-geometry-msgs \
+  ros-jazzy-geometry-msgs \
+  ros-jazzy-sensor-msgs \
+  ros-jazzy-nav-msgs \
+  ros-jazzy-std-msgs
 ```
 
 ### 4. Build Tools
@@ -147,7 +189,19 @@ echo "source ~/ros2_ws/install/setup.bash" >> ~/.bashrc
 
 ### Simulation (SITL)
 
-If testing with ArduPilot SITL, start MAVROS pointing at the simulator:
+If running ArduPilot SITL **on Windows** (outside WSL), use the WSL2 host IP instead of `127.0.0.1`. Find it with:
+
+```bash
+cat /etc/resolv.conf | grep nameserver | awk '{print $2}'
+```
+
+Then launch MAVROS with that IP:
+
+```bash
+ros2 launch mavros apm.launch fcu_url:=udp://<host-ip>:14550@14555
+```
+
+If running SITL **inside WSL** (same machine), `127.0.0.1` works directly:
 
 ```bash
 ros2 launch mavros apm.launch fcu_url:=udp://127.0.0.1:14550@14555
@@ -155,11 +209,37 @@ ros2 launch mavros apm.launch fcu_url:=udp://127.0.0.1:14550@14555
 
 ### Hardware (Flight Controller via USB/Serial)
 
+WSL2 does not expose USB devices by default. You must first forward the USB port from Windows using **usbipd-win**.
+
+#### 1. Install usbipd-win (run in PowerShell as Administrator on Windows)
+
+```powershell
+winget install usbipd
+```
+
+#### 2. Attach the flight controller to WSL (run in PowerShell as Administrator on Windows)
+
+```powershell
+usbipd list                        # find your device's BUSID
+usbipd bind --busid <BUSID>        # one-time, marks device as shareable
+usbipd attach --wsl --busid <BUSID>
+```
+
+#### 3. Verify the device is visible in WSL
+
+```bash
+ls /dev/ttyACM*   # or /dev/ttyUSB*
+```
+
+#### 4. Launch MAVROS
+
 ```bash
 ros2 launch mavros apm.launch fcu_url:=/dev/ttyACM0:57600
 ```
 
 Replace `/dev/ttyACM0` and baud rate with the values appropriate for your setup.
+
+> **Note:** `usbipd attach` must be re-run every time you reconnect the device or restart WSL.
 
 ---
 
@@ -208,6 +288,10 @@ ros2 pkg list | grep ARES
 | `rosdep init` fails | Run `sudo rosdep init` only once; skip if already initialized |
 | MAVROS GeographicLib error | Run the `install_geographiclib_datasets.sh` script (see Prerequisites) |
 | Package not found after build | Re-source the workspace: `source ~/ros2_ws/install/setup.bash` |
-| Serial port permission denied | Add your user to the `dialout` group: `sudo usermod -aG dialout $USER` then log out and back in |
+| Serial port permission denied | Add your user to the `dialout` group: `sudo usermod -aG dialout $USER`, then restart WSL |
 | Python imports fail | Make sure the virtual environment is activated: `source .venv/bin/activate` |
 | `pip install` errors | Upgrade pip first: `pip install --upgrade pip`, then retry |
+| `/dev/ttyACM0` not found in WSL | Re-attach USB with `usbipd attach --wsl --busid <BUSID>` from an Admin PowerShell |
+| SITL can't connect (UDP) | Use the WSL2 host IP from `/etc/resolv.conf` instead of `127.0.0.1` |
+| WSL version is 1 | Run `wsl --set-version Ubuntu-24.04 2` in PowerShell, then restart |
+| ROS2 daemon issues | Restart with `ros2 daemon stop && ros2 daemon start` |
