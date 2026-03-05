@@ -110,7 +110,7 @@ sudo apt install python3-venv python3-pip
 Create the virtual environment in the repo root:
 
 ```bash
-cd ~/ros2_ws/src/ARES-Project
+cd ~/ARES-Project
 python3 -m venv .venv
 ```
 
@@ -133,45 +133,38 @@ pip install -r requirements.txt
 
 ## Workspace Setup
 
-### 1. Create and enter your ROS2 workspace
-
-```bash
-mkdir -p ~/ros2_ws/src
-cd ~/ros2_ws/src
-```
-
-### 2. Clone this repository
+### 1. Clone this repository
 
 ```bash
 git clone https://github.com/mohamedzait20003/VIP-ARES-Project.git ARES-Project
 ```
 
-### 3. Set up the Python virtual environment
+### 2. Set up the Python virtual environment
 
 ```bash
-cd ~/ros2_ws/src/ARES-Project
+cd ~/ARES-Project
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 4. Initialize rosdep and install dependencies
+### 3. Initialize rosdep and install dependencies
 
 ```bash
-cd ~/ros2_ws
-sudo rosdep init        # skip if already done
+cd ~/ARES-Project
+sudo rosdep init
 rosdep update
 rosdep install --from-paths src --ignore-src -r -y
 ```
 
-### 5. Build the workspace
+### 4. Build the workspace
 
 ```bash
 cd ~/ros2_ws
 colcon build --symlink-install
 ```
 
-### 6. Source the workspace
+### 5. Source the workspace
 
 ```bash
 source ~/ros2_ws/install/setup.bash
