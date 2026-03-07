@@ -6,24 +6,452 @@
       <real_time_update_rate>1000</real_time_update_rate>
     </physics>
 
-    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
-    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
+<!-- ==================== PLUGINS ==================== -->
+    <plugin filename="gz-sim-physics-system"           name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-user-commands-system"     name="gz::sim::systems::UserCommands"/>
     <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="gz-sim-sensors-system"           name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin filename="gz-sim-imu-system"               name="gz::sim::systems::Imu"/>
     <plugin filename="gz-sim-multicopter-motor-model-system" name="gz::sim::systems::MulticopterMotorModel"/>
+    <plugin filename="gz-sim-multicopter-control-system"     name="gz::sim::systems::MulticopterVelocityControl"/>
+
+    <!-- ==================== SCENE ==================== -->
     <scene>
       <ambient>0.4 0.4 0.4 1</ambient>
-      <background>0.7 0.7 0.7 1</background>
-      <shadows>false</shadows>
+      <background>0.2 0.5 0.8 1</background>
+      <shadows>true</shadows>
     </scene>
 
-    <include>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Sun</uri>
-    </include>
+    <!-- ==================== LIGHTING ==================== -->
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 100 0 0 0</pose>
+      <diffuse>0.9 0.9 0.9 1</diffuse>
+      <specular>0.3 0.3 0.3 1</specular>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
 
-    <include>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Ground Plane</uri>
-    </include>
+    <!-- ==================== GROUND PLANE ==================== -->
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane><normal>0 0 1</normal><size>200 200</size></plane>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane><normal>0 0 1</normal><size>200 200</size></plane>
+          </geometry>
+          <material>
+            <ambient>0.2 0.4 0.2 1</ambient>
+            <diffuse>0.2 0.5 0.2 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
 
+    <!-- ==================== TERRAIN HILLS ==================== -->
+    <model name="hill_1">
+      <static>true</static>
+      <pose>20 10 0 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><sphere><radius>6</radius></sphere></geometry><pose>0 0 -4 0 0 0</pose></collision>
+        <visual name="vis"><geometry><sphere><radius>6</radius></sphere></geometry><pose>0 0 -4 0 0 0</pose>
+          <material><ambient>0.3 0.5 0.2 1</ambient><diffuse>0.3 0.6 0.2 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <model name="hill_2">
+      <static>true</static>
+      <pose>-15 25 0 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><sphere><radius>8</radius></sphere></geometry><pose>0 0 -6 0 0 0</pose></collision>
+        <visual name="vis"><geometry><sphere><radius>8</radius></sphere></geometry><pose>0 0 -6 0 0 0</pose>
+          <material><ambient>0.3 0.5 0.2 1</ambient><diffuse>0.3 0.6 0.2 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <model name="hill_3">
+      <static>true</static>
+      <pose>35 -20 0 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><sphere><radius>5</radius></sphere></geometry><pose>0 0 -3.5 0 0 0</pose></collision>
+        <visual name="vis"><geometry><sphere><radius>5</radius></sphere></geometry><pose>0 0 -3.5 0 0 0</pose>
+          <material><ambient>0.3 0.5 0.2 1</ambient><diffuse>0.3 0.6 0.2 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- ==================== RACING GATES ==================== -->
+    <!-- Gate 1 - Start/Finish (orange) -->
+    <model name="gate_1_left_post">
+      <static>true</static><pose>0 -5 0 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><cylinder><radius>0.15</radius><length>4</length></cylinder></geometry><pose>0 0 2 0 0 0</pose></collision>
+        <visual name="vis"><geometry><cylinder><radius>0.15</radius><length>4</length></cylinder></geometry><pose>0 0 2 0 0 0</pose>
+          <material><ambient>1 0.4 0 1</ambient><diffuse>1 0.4 0 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="gate_1_right_post">
+      <static>true</static><pose>0 5 0 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><cylinder><radius>0.15</radius><length>4</length></cylinder></geometry><pose>0 0 2 0 0 0</pose></collision>
+        <visual name="vis"><geometry><cylinder><radius>0.15</radius><length>4</length></cylinder></geometry><pose>0 0 2 0 0 0</pose>
+          <material><ambient>1 0.4 0 1</ambient><diffuse>1 0.4 0 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="gate_1_top_bar">
+      <static>true</static><pose>0 0 4 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.3 10.3 0.3</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.3 10.3 0.3</size></box></geometry>
+          <material><ambient>1 0.4 0 1</ambient><diffuse>1 0.4 0 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Gate 2 (blue) -->
+    <model name="gate_2_left_post">
+      <static>true</static><pose>15 -4 0 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><cylinder><radius>0.15</radius><length>3.5</length></cylinder></geometry><pose>0 0 1.75 0 0 0</pose></collision>
+        <visual name="vis"><geometry><cylinder><radius>0.15</radius><length>3.5</length></cylinder></geometry><pose>0 0 1.75 0 0 0</pose>
+          <material><ambient>0 0.4 1 1</ambient><diffuse>0 0.4 1 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="gate_2_right_post">
+      <static>true</static><pose>15 4 0 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><cylinder><radius>0.15</radius><length>3.5</length></cylinder></geometry><pose>0 0 1.75 0 0 0</pose></collision>
+        <visual name="vis"><geometry><cylinder><radius>0.15</radius><length>3.5</length></cylinder></geometry><pose>0 0 1.75 0 0 0</pose>
+          <material><ambient>0 0.4 1 1</ambient><diffuse>0 0.4 1 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="gate_2_top_bar">
+      <static>true</static><pose>15 0 3.5 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.3 8.3 0.3</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.3 8.3 0.3</size></box></geometry>
+          <material><ambient>0 0.4 1 1</ambient><diffuse>0 0.4 1 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Gate 3 (green, rotated 90°) -->
+    <model name="gate_3_left_post">
+      <static>true</static><pose>30 15 0 0 0 1.5708</pose>
+      <link name="link">
+        <collision name="col"><geometry><cylinder><radius>0.15</radius><length>4</length></cylinder></geometry><pose>0 0 2 0 0 0</pose></collision>
+        <visual name="vis"><geometry><cylinder><radius>0.15</radius><length>4</length></cylinder></geometry><pose>0 0 2 0 0 0</pose>
+          <material><ambient>0 0.8 0.2 1</ambient><diffuse>0 0.8 0.2 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="gate_3_right_post">
+      <static>true</static><pose>30 25 0 0 0 1.5708</pose>
+      <link name="link">
+        <collision name="col"><geometry><cylinder><radius>0.15</radius><length>4</length></cylinder></geometry><pose>0 0 2 0 0 0</pose></collision>
+        <visual name="vis"><geometry><cylinder><radius>0.15</radius><length>4</length></cylinder></geometry><pose>0 0 2 0 0 0</pose>
+          <material><ambient>0 0.8 0.2 1</ambient><diffuse>0 0.8 0.2 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="gate_3_top_bar">
+      <static>true</static><pose>30 20 4 0 0 1.5708</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.3 10.3 0.3</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.3 10.3 0.3</size></box></geometry>
+          <material><ambient>0 0.8 0.2 1</ambient><diffuse>0 0.8 0.2 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Gate 4 - Return (yellow) -->
+    <model name="gate_4_left_post">
+      <static>true</static><pose>-10 20 0 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><cylinder><radius>0.15</radius><length>4</length></cylinder></geometry><pose>0 0 2 0 0 0</pose></collision>
+        <visual name="vis"><geometry><cylinder><radius>0.15</radius><length>4</length></cylinder></geometry><pose>0 0 2 0 0 0</pose>
+          <material><ambient>1 0.9 0 1</ambient><diffuse>1 0.9 0 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="gate_4_right_post">
+      <static>true</static><pose>-10 28 0 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><cylinder><radius>0.15</radius><length>4</length></cylinder></geometry><pose>0 0 2 0 0 0</pose></collision>
+        <visual name="vis"><geometry><cylinder><radius>0.15</radius><length>4</length></cylinder></geometry><pose>0 0 2 0 0 0</pose>
+          <material><ambient>1 0.9 0 1</ambient><diffuse>1 0.9 0 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="gate_4_top_bar">
+      <static>true</static><pose>-10 24 4 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.3 8.3 0.3</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.3 8.3 0.3</size></box></geometry>
+          <material><ambient>1 0.9 0 1</ambient><diffuse>1 0.9 0 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- ==================== WALL OBSTACLES ==================== -->
+    <model name="slalom_wall_left">
+      <static>true</static><pose>8 -8 1.5 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.3 6 3</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.3 6 3</size></box></geometry>
+          <material><ambient>0.6 0.1 0.1 1</ambient><diffuse>0.7 0.1 0.1 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="slalom_wall_right">
+      <static>true</static><pose>8 6 1.5 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>0.3 6 3</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>0.3 6 3</size></box></geometry>
+          <material><ambient>0.6 0.1 0.1 1</ambient><diffuse>0.7 0.1 0.1 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Tunnel -->
+    <model name="tunnel_left_wall">
+      <static>true</static><pose>22 -3 1 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>8 0.3 2</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>8 0.3 2</size></box></geometry>
+          <material><ambient>0.5 0.5 0.5 1</ambient><diffuse>0.6 0.6 0.6 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tunnel_right_wall">
+      <static>true</static><pose>22 3 1 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>8 0.3 2</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>8 0.3 2</size></box></geometry>
+          <material><ambient>0.5 0.5 0.5 1</ambient><diffuse>0.6 0.6 0.6 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="tunnel_ceiling">
+      <static>true</static><pose>22 0 2 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>8 6.3 0.3</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>8 6.3 0.3</size></box></geometry>
+          <material><ambient>0.4 0.4 0.4 1</ambient><diffuse>0.5 0.5 0.5 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Pillars -->
+    <model name="pillar_1">
+      <static>true</static><pose>-5 10 2 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><cylinder><radius>0.4</radius><length>4</length></cylinder></geometry></collision>
+        <visual name="vis"><geometry><cylinder><radius>0.4</radius><length>4</length></cylinder></geometry>
+          <material><ambient>0.7 0.5 0.1 1</ambient><diffuse>0.8 0.6 0.1 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="pillar_2">
+      <static>true</static><pose>5 15 2 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><cylinder><radius>0.4</radius><length>4</length></cylinder></geometry></collision>
+        <visual name="vis"><geometry><cylinder><radius>0.4</radius><length>4</length></cylinder></geometry>
+          <material><ambient>0.7 0.5 0.1 1</ambient><diffuse>0.8 0.6 0.1 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="pillar_3">
+      <static>true</static><pose>-3 -12 2 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><cylinder><radius>0.4</radius><length>4</length></cylinder></geometry></collision>
+        <visual name="vis"><geometry><cylinder><radius>0.4</radius><length>4</length></cylinder></geometry>
+          <material><ambient>0.7 0.5 0.1 1</ambient><diffuse>0.8 0.6 0.1 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- ==================== QUADROTOR DRONE ==================== -->
+    <model name="quadrotor">
+      <pose>0 0 0.2 0 0 0</pose>
+
+      <link name="base_link">
+        <inertial>
+          <mass>1.5</mass>
+          <inertia>
+            <ixx>0.0347563</ixx><ixy>0</ixy><ixz>0</ixz>
+            <iyy>0.0458929</iyy><iyz>0</iyz>
+            <izz>0.0700</izz>
+          </inertia>
+        </inertial>
+
+        <collision name="body_col">
+          <geometry><box><size>0.47 0.47 0.11</size></box></geometry>
+        </collision>
+        <visual name="body_vis">
+          <geometry><box><size>0.47 0.47 0.11</size></box></geometry>
+          <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.2 0.2 0.2 1</diffuse></material>
+        </visual>
+
+        <!-- ========== IMU ========== -->
+        <sensor name="imu_sensor" type="imu">
+          <always_on>true</always_on>
+          <update_rate>200</update_rate>
+          <imu>
+            <angular_velocity>
+              <x><noise type="gaussian"><mean>0</mean><stddev>0.009</stddev></noise></x>
+              <y><noise type="gaussian"><mean>0</mean><stddev>0.009</stddev></noise></y>
+              <z><noise type="gaussian"><mean>0</mean><stddev>0.009</stddev></noise></z>
+            </angular_velocity>
+            <linear_acceleration>
+              <x><noise type="gaussian"><mean>0</mean><stddev>0.021</stddev></noise></x>
+              <y><noise type="gaussian"><mean>0</mean><stddev>0.021</stddev></noise></y>
+              <z><noise type="gaussian"><mean>0</mean><stddev>0.021</stddev></noise></z>
+            </linear_acceleration>
+          </imu>
+          <topic>/drone/imu</topic>
+        </sensor>
+
+        <!-- ========== FORWARD CAMERA ========== -->
+        <sensor name="front_camera" type="camera">
+          <always_on>true</always_on>
+          <update_rate>30</update_rate>
+          <pose>0.15 0 0.02 0 0.2 0</pose>
+          <camera>
+            <horizontal_fov>1.5708</horizontal_fov>
+            <image><width>640</width><height>480</height><format>R8G8B8</format></image>
+            <clip><near>0.1</near><far>100</far></clip>
+            <noise><type>gaussian</type><mean>0</mean><stddev>0.007</stddev></noise>
+          </camera>
+          <topic>/drone/camera/front</topic>
+        </sensor>
+
+        <!-- ========== DOWNWARD CAMERA ========== -->
+        <sensor name="down_camera" type="camera">
+          <always_on>true</always_on>
+          <update_rate>30</update_rate>
+          <pose>0 0 -0.06 0 1.5708 0</pose>
+          <camera>
+            <horizontal_fov>1.2</horizontal_fov>
+            <image><width>320</width><height>240</height><format>R8G8B8</format></image>
+            <clip><near>0.05</near><far>20</far></clip>
+          </camera>
+          <topic>/drone/camera/down</topic>
+        </sensor>
+
+        <!-- ========== LIDAR ========== -->
+        <sensor name="lidar" type="gpu_lidar">
+          <always_on>true</always_on>
+          <update_rate>10</update_rate>
+          <pose>0 0 0.06 0 0 0</pose>
+          <lidar>
+            <scan>
+              <horizontal>
+                <samples>360</samples><resolution>1</resolution>
+                <min_angle>-3.14159</min_angle><max_angle>3.14159</max_angle>
+              </horizontal>
+              <vertical>
+                <samples>16</samples><resolution>1</resolution>
+                <min_angle>-0.2618</min_angle><max_angle>0.2618</max_angle>
+              </vertical>
+            </scan>
+            <range><min>0.1</min><max>30</max><resolution>0.01</resolution></range>
+            <noise><type>gaussian</type><mean>0</mean><stddev>0.01</stddev></noise>
+          </lidar>
+          <topic>/drone/lidar</topic>
+        </sensor>
+
+      </link>
+
+      <!-- ========== ROTORS ========== -->
+      <link name="rotor_fl">
+        <pose>0.22 0.22 0.03 0 0 0</pose>
+        <inertial><mass>0.025</mass><inertia><ixx>9.75e-7</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.000166704</iyy><iyz>0</iyz><izz>0.000167604</izz></inertia></inertial>
+        <collision name="col"><geometry><cylinder><radius>0.128</radius><length>0.005</length></cylinder></geometry></collision>
+        <visual name="vis"><geometry><cylinder><radius>0.128</radius><length>0.005</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 0.5</ambient><diffuse>0.1 0.1 0.1 0.5</diffuse></material></visual>
+      </link>
+      <joint name="rotor_fl_joint" type="revolute">
+        <parent>base_link</parent><child>rotor_fl</child>
+        <axis><xyz>0 0 1</xyz><limit><lower>-1e+16</lower><upper>1e+16</upper></limit></axis>
+      </joint>
+      <plugin filename="gz-sim-multicopter-motor-model-system" name="gz::sim::systems::MulticopterMotorModel">
+        <robotNamespace>quadrotor</robotNamespace><jointName>rotor_fl_joint</jointName><linkName>rotor_fl</linkName>
+        <turningDirection>ccw</turningDirection><timeConstantUp>0.0125</timeConstantUp><timeConstantDown>0.025</timeConstantDown>
+        <maxRotVelocity>800</maxRotVelocity><motorConstant>8.54858e-6</motorConstant><momentConstant>0.016</momentConstant>
+        <commandSubTopic>/motor_speed</commandSubTopic><motorNumber>0</motorNumber>
+        <rotorDragCoefficient>8.06428e-5</rotorDragCoefficient><rollingMomentCoefficient>1e-6</rollingMomentCoefficient>
+        <motorSpeedPubTopic>/motor_speed/0</motorSpeedPubTopic><rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+      </plugin>
+
+      <link name="rotor_fr">
+        <pose>0.22 -0.22 0.03 0 0 0</pose>
+        <inertial><mass>0.025</mass><inertia><ixx>9.75e-7</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.000166704</iyy><iyz>0</iyz><izz>0.000167604</izz></inertia></inertial>
+        <collision name="col"><geometry><cylinder><radius>0.128</radius><length>0.005</length></cylinder></geometry></collision>
+        <visual name="vis"><geometry><cylinder><radius>0.128</radius><length>0.005</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 0.5</ambient><diffuse>0.1 0.1 0.1 0.5</diffuse></material></visual>
+      </link>
+      <joint name="rotor_fr_joint" type="revolute">
+        <parent>base_link</parent><child>rotor_fr</child>
+        <axis><xyz>0 0 1</xyz><limit><lower>-1e+16</lower><upper>1e+16</upper></limit></axis>
+      </joint>
+      <plugin filename="gz-sim-multicopter-motor-model-system" name="gz::sim::systems::MulticopterMotorModel">
+        <robotNamespace>quadrotor</robotNamespace><jointName>rotor_fr_joint</jointName><linkName>rotor_fr</linkName>
+        <turningDirection>cw</turningDirection><timeConstantUp>0.0125</timeConstantUp><timeConstantDown>0.025</timeConstantDown>
+        <maxRotVelocity>800</maxRotVelocity><motorConstant>8.54858e-6</motorConstant><momentConstant>0.016</momentConstant>
+        <commandSubTopic>/motor_speed</commandSubTopic><motorNumber>1</motorNumber>
+        <rotorDragCoefficient>8.06428e-5</rotorDragCoefficient><rollingMomentCoefficient>1e-6</rollingMomentCoefficient>
+        <motorSpeedPubTopic>/motor_speed/1</motorSpeedPubTopic><rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+      </plugin>
+
+      <link name="rotor_rl">
+        <pose>-0.22 0.22 0.03 0 0 0</pose>
+        <inertial><mass>0.025</mass><inertia><ixx>9.75e-7</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.000166704</iyy><iyz>0</iyz><izz>0.000167604</izz></inertia></inertial>
+        <collision name="col"><geometry><cylinder><radius>0.128</radius><length>0.005</length></cylinder></geometry></collision>
+        <visual name="vis"><geometry><cylinder><radius>0.128</radius><length>0.005</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 0.5</ambient><diffuse>0.1 0.1 0.1 0.5</diffuse></material></visual>
+      </link>
+      <joint name="rotor_rl_joint" type="revolute">
+        <parent>base_link</parent><child>rotor_rl</child>
+        <axis><xyz>0 0 1</xyz><limit><lower>-1e+16</lower><upper>1e+16</upper></limit></axis>
+      </joint>
+      <plugin filename="gz-sim-multicopter-motor-model-system" name="gz::sim::systems::MulticopterMotorModel">
+        <robotNamespace>quadrotor</robotNamespace><jointName>rotor_rl_joint</jointName><linkName>rotor_rl</linkName>
+        <turningDirection>cw</turningDirection><timeConstantUp>0.0125</timeConstantUp><timeConstantDown>0.025</timeConstantDown>
+        <maxRotVelocity>800</maxRotVelocity><motorConstant>8.54858e-6</motorConstant><momentConstant>0.016</momentConstant>
+        <commandSubTopic>/motor_speed</commandSubTopic><motorNumber>2</motorNumber>
+        <rotorDragCoefficient>8.06428e-5</rotorDragCoefficient><rollingMomentCoefficient>1e-6</rollingMomentCoefficient>
+        <motorSpeedPubTopic>/motor_speed/2</motorSpeedPubTopic><rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+      </plugin>
+
+      <link name="rotor_rr">
+        <pose>-0.22 -0.22 0.03 0 0 0</pose>
+        <inertial><mass>0.025</mass><inertia><ixx>9.75e-7</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.000166704</iyy><iyz>0</iyz><izz>0.000167604</izz></inertia></inertial>
+        <collision name="col"><geometry><cylinder><radius>0.128</radius><length>0.005</length></cylinder></geometry></collision>
+        <visual name="vis"><geometry><cylinder><radius>0.128</radius><length>0.005</length></cylinder></geometry>
+          <material><ambient>0.1 0.1 0.1 0.5</ambient><diffuse>0.1 0.1 0.1 0.5</diffuse></material></visual>
+      </link>
+      <joint name="rotor_rr_joint" type="revolute">
+        <parent>base_link</parent><child>rotor_rr</child>
+        <axis><xyz>0 0 1</xyz><limit><lower>-1e+16</lower><upper>1e+16</upper></limit></axis>
+      </joint>
+      <plugin filename="gz-sim-multicopter-motor-model-system" name="gz::sim::systems::MulticopterMotorModel">
+        <robotNamespace>quadrotor</robotNamespace><jointName>rotor_rr_joint</jointName><linkName>rotor_rr</linkName>
+        <turningDirection>ccw</turningDirection><timeConstantUp>0.0125</timeConstantUp><timeConstantDown>0.025</timeConstantDown>
+        <maxRotVelocity>800</maxRotVelocity><motorConstant>8.54858e-6</motorConstant><momentConstant>0.016</momentConstant>
+        <commandSubTopic>/motor_speed</commandSubTopic><motorNumber>3</motorNumber>
+        <rotorDragCoefficient>8.06428e-5</rotorDragCoefficient><rollingMomentCoefficient>1e-6</rollingMomentCoefficient>
+        <motorSpeedPubTopic>/motor_speed/3</motorSpeedPubTopic><rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+      </plugin>
+
+      <!-- ========== VELOCITY CONTROLLER ========== -->
+      <plugin filename="gz-sim-multicopter-control-system" name="gz::sim::systems::MulticopterVelocityControl">
+        <robotNamespace>quadrotor</robotNamespace>
+        <commandSubTopic>/cmd_vel</commandSubTopic>
+        <enableSubTopic>/enable</enableSubTopic>
+        <comLinkName>base_link</comLinkName>
+        <velocityGain>2.7 2.7 2.7</velocityGain>
+        <attitudeGain>2 3 0.15</attitudeGain>
+        <angularRateGain>0.4 0.52 0.18</angularRateGain>
+        <maximumLinearAcceleration>2 2 2</maximumLinearAcceleration>
+        <rotorConfiguration>
+          <rotor><jointName>rotor_fl_joint</jointName><armLength>0.22</armLength><forceConstant>8.54858e-6</forceConstant><momentConstant>0.016</momentConstant><direction>1</direction></rotor>
+          <rotor><jointName>rotor_fr_joint</jointName><armLength>0.22</armLength><forceConstant>8.54858e-6</forceConstant><momentConstant>0.016</momentConstant><direction>-1</direction></rotor>
+          <rotor><jointName>rotor_rl_joint</jointName><armLength>0.22</armLength><forceConstant>8.54858e-6</forceConstant><momentConstant>0.016</momentConstant><direction>-1</direction></rotor>
+          <rotor><jointName>rotor_rr_joint</jointName><armLength>0.22</armLength><forceConstant>8.54858e-6</forceConstant><momentConstant>0.016</momentConstant><direction>1</direction></rotor>
+        </rotorConfiguration>
+      </plugin>
+
+    </model>
 
   </world>
 </sdf>
