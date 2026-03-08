@@ -24,8 +24,6 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'demo_publisher = app.demo_publisher:main',
-            'demo_subscriber = app.demo_subscriber:main',
         ],
     },
 )
