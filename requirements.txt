@@ -15,3 +15,6 @@ opencv-python>=4.8.0
 
 # Plotting / debugging utilities
 matplotlib>=3.7.0
+
+# Nonlinear optimization (used by NMPC controller)
+casadi>=3.6.0
