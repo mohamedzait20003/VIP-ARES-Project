@@ -165,15 +165,15 @@
 
       <link name="base_link">
         <inertial>
-          <mass>1.5</mass>
+          <mass>1.95</mass>
           <inertia>
             <ixx>0.0347563</ixx><ixy>0</ixy><ixz>0</ixz>
             <iyy>0.0458929</iyy><iyz>0</iyz>
             <izz>0.0700</izz>
           </inertia>
         </inertial>
-        <collision name="body_col"><geometry><box><size>0.47 0.47 0.11</size></box></geometry></collision>
-        <visual name="body_vis"><geometry><box><size>0.47 0.47 0.11</size></box></geometry>
+        <collision name="body_col"><geometry><box><size>0.3937 0.3937 0.09271</size></box></geometry></collision>
+        <visual name="body_vis"><geometry><box><size>0.3937 0.3937 0.09271</size></box></geometry>
           <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.2 0.2 0.2 1</diffuse></material></visual>
 
         <sensor name="imu_sensor" type="imu">
@@ -195,7 +195,7 @@
 
         <sensor name="front_camera" type="camera">
           <always_on>true</always_on><update_rate>30</update_rate>
-          <pose>0.15 0 0.02 0 0.2 0</pose>
+          <pose>-0.1905 0 0.02667 0 0 0</pose>
           <camera>
             <horizontal_fov>1.5708</horizontal_fov>
             <image><width>640</width><height>480</height><format>R8G8B8</format></image>
@@ -204,23 +204,10 @@
           <topic>/drone/camera/front</topic>
         </sensor>
 
-        <sensor name="lidar" type="gpu_lidar">
-          <always_on>true</always_on><update_rate>10</update_rate>
-          <pose>0 0 0.06 0 0 0</pose>
-          <lidar>
-            <scan>
-              <horizontal><samples>360</samples><resolution>1</resolution><min_angle>-3.14159</min_angle><max_angle>3.14159</max_angle></horizontal>
-              <vertical><samples>16</samples><resolution>1</resolution><min_angle>-0.2618</min_angle><max_angle>0.2618</max_angle></vertical>
-            </scan>
-            <range><min>0.1</min><max>30</max><resolution>0.01</resolution></range>
-          </lidar>
-          <topic>/drone/lidar</topic>
-        </sensor>
       </link>
-
       <link name="rotor_fl">
-        <pose>0.22 0.22 0.03 0 0 0</pose>
-        <inertial><mass>0.025</mass><inertia><ixx>9.75e-7</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.000166704</iyy><iyz>0</iyz><izz>0.000167604</izz></inertia></inertial>
+        <pose>0.15875 0.166878 0.093345 0 0 0</pose>
+        <inertial><mass>0.094</mass><inertia><ixx>9.75e-7</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.000166704</iyy><iyz>0</iyz><izz>0.000167604</izz></inertia></inertial>
         <collision name="col"><geometry><cylinder><radius>0.128</radius><length>0.005</length></cylinder></geometry></collision>
         <visual name="vis"><geometry><cylinder><radius>0.128</radius><length>0.005</length></cylinder></geometry>
           <material><ambient>0.1 0.1 0.1 0.5</ambient><diffuse>0.1 0.1 0.1 0.5</diffuse></material></visual>
@@ -231,8 +218,8 @@
       </joint>
 
       <link name="rotor_fr">
-        <pose>0.22 -0.22 0.03 0 0 0</pose>
-        <inertial><mass>0.025</mass><inertia><ixx>9.75e-7</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.000166704</iyy><iyz>0</iyz><izz>0.000167604</izz></inertia></inertial>
+        <pose>0.15875 -0.166878 0.093345 0 0 0</pose>
+        <inertial><mass>0.094</mass><inertia><ixx>9.75e-7</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.000166704</iyy><iyz>0</iyz><izz>0.000167604</izz></inertia></inertial>
         <collision name="col"><geometry><cylinder><radius>0.128</radius><length>0.005</length></cylinder></geometry></collision>
         <visual name="vis"><geometry><cylinder><radius>0.128</radius><length>0.005</length></cylinder></geometry>
           <material><ambient>0.1 0.1 0.1 0.5</ambient><diffuse>0.1 0.1 0.1 0.5</diffuse></material></visual>
@@ -243,8 +230,8 @@
       </joint>
 
       <link name="rotor_rl">
-        <pose>-0.22 0.22 0.03 0 0 0</pose>
-        <inertial><mass>0.025</mass><inertia><ixx>9.75e-7</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.000166704</iyy><iyz>0</iyz><izz>0.000167604</izz></inertia></inertial>
+        <pose>-0.15875 0.166878 0.093345 0 0 0</pose>
+        <inertial><mass>0.094</mass><inertia><ixx>9.75e-7</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.000166704</iyy><iyz>0</iyz><izz>0.000167604</izz></inertia></inertial>
         <collision name="col"><geometry><cylinder><radius>0.128</radius><length>0.005</length></cylinder></geometry></collision>
         <visual name="vis"><geometry><cylinder><radius>0.128</radius><length>0.005</length></cylinder></geometry>
           <material><ambient>0.1 0.1 0.1 0.5</ambient><diffuse>0.1 0.1 0.1 0.5</diffuse></material></visual>
@@ -255,8 +242,8 @@
       </joint>
 
       <link name="rotor_rr">
-        <pose>-0.22 -0.22 0.03 0 0 0</pose>
-        <inertial><mass>0.025</mass><inertia><ixx>9.75e-7</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.000166704</iyy><iyz>0</iyz><izz>0.000167604</izz></inertia></inertial>
+        <pose>-0.15875 -0.166878 0.093345 0 0 0</pose>
+        <inertial><mass>0.094</mass><inertia><ixx>9.75e-7</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.000166704</iyy><iyz>0</iyz><izz>0.000167604</izz></inertia></inertial>
         <collision name="col"><geometry><cylinder><radius>0.128</radius><length>0.005</length></cylinder></geometry></collision>
         <visual name="vis"><geometry><cylinder><radius>0.128</radius><length>0.005</length></cylinder></geometry>
           <material><ambient>0.1 0.1 0.1 0.5</ambient><diffuse>0.1 0.1 0.1 0.5</diffuse></material></visual>
