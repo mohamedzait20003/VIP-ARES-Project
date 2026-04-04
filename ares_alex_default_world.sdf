@@ -261,10 +261,10 @@
         <angularRateGain>0.4 0.52 0.18</angularRateGain>
         <maximumLinearAcceleration>2 2 2</maximumLinearAcceleration>
         <rotorConfiguration>
-          <rotor><jointName>rotor_fl_joint</jointName><armLength>0.22</armLength><forceConstant>8.54858e-6</forceConstant><momentConstant>0.016</momentConstant><direction>1</direction></rotor>
-          <rotor><jointName>rotor_fr_joint</jointName><armLength>0.22</armLength><forceConstant>8.54858e-6</forceConstant><momentConstant>0.016</momentConstant><direction>-1</direction></rotor>
-          <rotor><jointName>rotor_rl_joint</jointName><armLength>0.22</armLength><forceConstant>8.54858e-6</forceConstant><momentConstant>0.016</momentConstant><direction>-1</direction></rotor>
-          <rotor><jointName>rotor_rr_joint</jointName><armLength>0.22</armLength><forceConstant>8.54858e-6</forceConstant><momentConstant>0.016</momentConstant><direction>1</direction></rotor>
+          <rotor><jointName>rotor_fl_joint</jointName><armLength>0.2305</armLength><forceConstant>8.54858e-6</forceConstant><momentConstant>0.016</momentConstant><direction>1</direction></rotor>
+          <rotor><jointName>rotor_fr_joint</jointName><armLength>0.2305</armLength><forceConstant>8.54858e-6</forceConstant><momentConstant>0.016</momentConstant><direction>-1</direction></rotor>
+          <rotor><jointName>rotor_rl_joint</jointName><armLength>0.2305</armLength><forceConstant>8.54858e-6</forceConstant><momentConstant>0.016</momentConstant><direction>-1</direction></rotor>
+          <rotor><jointName>rotor_rr_joint</jointName><armLength>0.2305</armLength><forceConstant>8.54858e-6</forceConstant><momentConstant>0.016</momentConstant><direction>1</direction></rotor>
         </rotorConfiguration>
       </plugin>
 
