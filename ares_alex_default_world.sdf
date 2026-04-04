@@ -60,14 +60,6 @@
           <material><ambient>0.3 0.5 0.2 1</ambient><diffuse>0.3 0.6 0.2 1</diffuse></material></visual>
       </link>
     </model>
-    <model name="hill_3">
-      <static>true</static><pose>35 -20 0 0 0 0</pose>
-      <link name="link">
-        <collision name="col"><geometry><sphere><radius>5</radius></sphere></geometry><pose>0 0 -3.5 0 0 0</pose></collision>
-        <visual name="vis"><geometry><sphere><radius>5</radius></sphere></geometry><pose>0 0 -3.5 0 0 0</pose>
-          <material><ambient>0.3 0.5 0.2 1</ambient><diffuse>0.3 0.6 0.2 1</diffuse></material></visual>
-      </link>
-    </model>
 
     <!-- GATE 1 - orange -->
     <model name="gate_1_left_post"><static>true</static><pose>0 -5 0 0 0 0</pose>
@@ -83,35 +75,7 @@
         <visual name="vis"><geometry><box><size>0.3 10.3 0.3</size></box></geometry><material><ambient>1 0.4 0 1</ambient><diffuse>1 0.4 0 1</diffuse></material></visual></link>
     </model>
 
-    <!-- GATE 2 - blue -->
-    <model name="gate_2_left_post"><static>true</static><pose>15 -4 0 0 0 0</pose>
-      <link name="link"><collision name="col"><geometry><cylinder><radius>0.15</radius><length>3.5</length></cylinder></geometry><pose>0 0 1.75 0 0 0</pose></collision>
-        <visual name="vis"><geometry><cylinder><radius>0.15</radius><length>3.5</length></cylinder></geometry><pose>0 0 1.75 0 0 0</pose><material><ambient>0 0.4 1 1</ambient><diffuse>0 0.4 1 1</diffuse></material></visual></link>
-    </model>
-    <model name="gate_2_right_post"><static>true</static><pose>15 4 0 0 0 0</pose>
-      <link name="link"><collision name="col"><geometry><cylinder><radius>0.15</radius><length>3.5</length></cylinder></geometry><pose>0 0 1.75 0 0 0</pose></collision>
-        <visual name="vis"><geometry><cylinder><radius>0.15</radius><length>3.5</length></cylinder></geometry><pose>0 0 1.75 0 0 0</pose><material><ambient>0 0.4 1 1</ambient><diffuse>0 0.4 1 1</diffuse></material></visual></link>
-    </model>
-    <model name="gate_2_top_bar"><static>true</static><pose>15 0 3.5 0 0 0</pose>
-      <link name="link"><collision name="col"><geometry><box><size>0.3 8.3 0.3</size></box></geometry></collision>
-        <visual name="vis"><geometry><box><size>0.3 8.3 0.3</size></box></geometry><material><ambient>0 0.4 1 1</ambient><diffuse>0 0.4 1 1</diffuse></material></visual></link>
-    </model>
-
-    <!-- GATE 3 - green -->
-    <model name="gate_3_left_post"><static>true</static><pose>30 15 0 0 0 1.5708</pose>
-      <link name="link"><collision name="col"><geometry><cylinder><radius>0.15</radius><length>4</length></cylinder></geometry><pose>0 0 2 0 0 0</pose></collision>
-        <visual name="vis"><geometry><cylinder><radius>0.15</radius><length>4</length></cylinder></geometry><pose>0 0 2 0 0 0</pose><material><ambient>0 0.8 0.2 1</ambient><diffuse>0 0.8 0.2 1</diffuse></material></visual></link>
-    </model>
-    <model name="gate_3_right_post"><static>true</static><pose>30 25 0 0 0 1.5708</pose>
-      <link name="link"><collision name="col"><geometry><cylinder><radius>0.15</radius><length>4</length></cylinder></geometry><pose>0 0 2 0 0 0</pose></collision>
-        <visual name="vis"><geometry><cylinder><radius>0.15</radius><length>4</length></cylinder></geometry><pose>0 0 2 0 0 0</pose><material><ambient>0 0.8 0.2 1</ambient><diffuse>0 0.8 0.2 1</diffuse></material></visual></link>
-    </model>
-    <model name="gate_3_top_bar"><static>true</static><pose>30 20 4 0 0 1.5708</pose>
-      <link name="link"><collision name="col"><geometry><box><size>0.3 10.3 0.3</size></box></geometry></collision>
-        <visual name="vis"><geometry><box><size>0.3 10.3 0.3</size></box></geometry><material><ambient>0 0.8 0.2 1</ambient><diffuse>0 0.8 0.2 1</diffuse></material></visual></link>
-    </model>
-
-    <!-- GATE 4 - yellow -->
+    <!-- GATE 2 - yellow -->
     <model name="gate_4_left_post"><static>true</static><pose>-10 20 0 0 0 0</pose>
       <link name="link"><collision name="col"><geometry><cylinder><radius>0.15</radius><length>4</length></cylinder></geometry><pose>0 0 2 0 0 0</pose></collision>
         <visual name="vis"><geometry><cylinder><radius>0.15</radius><length>4</length></cylinder></geometry><pose>0 0 2 0 0 0</pose><material><ambient>1 0.9 0 1</ambient><diffuse>1 0.9 0 1</diffuse></material></visual></link>
