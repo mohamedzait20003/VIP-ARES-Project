@@ -2,13 +2,23 @@
 <sdf version="1.8">
   <world name="ares_world">
 
-    <physics name="2ms" type="ignored">
-      <max_step_size>0.0025</max_step_size>
-      <real_time_update_rate>400</real_time_update_rate>
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_update_rate>1000</real_time_update_rate>
     </physics>
+
+    <!-- GPS coordinates — required for ArduPilot EKF compass/heading simulation -->
+    <spherical_coordinates>
+      <latitude_deg>-35.363262</latitude_deg>
+      <longitude_deg>149.165237</longitude_deg>
+      <elevation>584</elevation>
+      <heading_deg>0</heading_deg>
+      <surface_model>EARTH_WGS84</surface_model>
+    </spherical_coordinates>
 
     <!-- World-level plugins ONLY -->
     <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-navsat-system" name="gz::sim::systems::NavSat"/>
     <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
     <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
     <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
@@ -62,15 +72,15 @@
     </model>
 
     <!-- GATE 1 - orange -->
-    <model name="gate_1_left_post"><static>true</static><pose>0 -5 0 0 0 0</pose>
+    <model name="gate_1_left_post"><static>true</static><pose>10 -5 0 0 0 0</pose>
       <link name="link"><collision name="col"><geometry><cylinder><radius>0.15</radius><length>4</length></cylinder></geometry><pose>0 0 2 0 0 0</pose></collision>
         <visual name="vis"><geometry><cylinder><radius>0.15</radius><length>4</length></cylinder></geometry><pose>0 0 2 0 0 0</pose><material><ambient>1 0.4 0 1</ambient><diffuse>1 0.4 0 1</diffuse></material></visual></link>
     </model>
-    <model name="gate_1_right_post"><static>true</static><pose>0 5 0 0 0 0</pose>
+    <model name="gate_1_right_post"><static>true</static><pose>10 5 0 0 0 0</pose>
       <link name="link"><collision name="col"><geometry><cylinder><radius>0.15</radius><length>4</length></cylinder></geometry><pose>0 0 2 0 0 0</pose></collision>
         <visual name="vis"><geometry><cylinder><radius>0.15</radius><length>4</length></cylinder></geometry><pose>0 0 2 0 0 0</pose><material><ambient>1 0.4 0 1</ambient><diffuse>1 0.4 0 1</diffuse></material></visual></link>
     </model>
-    <model name="gate_1_top_bar"><static>true</static><pose>0 0 4 0 0 0</pose>
+    <model name="gate_1_top_bar"><static>true</static><pose>10 0 4 0 0 0</pose>
       <link name="link"><collision name="col"><geometry><box><size>0.3 10.3 0.3</size></box></geometry></collision>
         <visual name="vis"><geometry><box><size>0.3 10.3 0.3</size></box></geometry><material><ambient>1 0.4 0 1</ambient><diffuse>1 0.4 0 1</diffuse></material></visual></link>
     </model>
@@ -131,9 +141,9 @@
         <inertial>
           <mass>1.95</mass>
           <inertia>
-            <ixx>0.0347563</ixx><ixy>0</ixy><ixz>0</ixz>
-            <iyy>0.0458929</iyy><iyz>0</iyz>
-            <izz>0.0700</izz>
+            <ixx>0.0451832</ixx><ixy>0</ixy><ixz>0</ixz>
+            <iyy>0.0596608</iyy><iyz>0</iyz>
+            <izz>0.0910</izz>
           </inertia>
         </inertial>
         <collision name="body_col"><geometry><box><size>0.3937 0.3937 0.09271</size></box></geometry></collision>
@@ -141,17 +151,17 @@
           <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.2 0.2 0.2 1</diffuse></material></visual>
 
         <sensor name="imu_sensor" type="imu">
-          <always_on>true</always_on><update_rate>200</update_rate>
+          <always_on>true</always_on><update_rate>400</update_rate>
           <imu>
             <angular_velocity>
-              <x><noise type="gaussian"><mean>0</mean><stddev>0.009</stddev></noise></x>
-              <y><noise type="gaussian"><mean>0</mean><stddev>0.009</stddev></noise></y>
-              <z><noise type="gaussian"><mean>0</mean><stddev>0.009</stddev></noise></z>
+              <x><noise type="gaussian"><mean>0</mean><stddev>0.00018</stddev></noise></x>
+              <y><noise type="gaussian"><mean>0</mean><stddev>0.00018</stddev></noise></y>
+              <z><noise type="gaussian"><mean>0</mean><stddev>0.00018</stddev></noise></z>
             </angular_velocity>
             <linear_acceleration>
-              <x><noise type="gaussian"><mean>0</mean><stddev>0.021</stddev></noise></x>
-              <y><noise type="gaussian"><mean>0</mean><stddev>0.021</stddev></noise></y>
-              <z><noise type="gaussian"><mean>0</mean><stddev>0.021</stddev></noise></z>
+              <x><noise type="gaussian"><mean>0</mean><stddev>0.00078</stddev></noise></x>
+              <y><noise type="gaussian"><mean>0</mean><stddev>0.00078</stddev></noise></y>
+              <z><noise type="gaussian"><mean>0</mean><stddev>0.00078</stddev></noise></z>
             </linear_acceleration>
           </imu>
         </sensor>
@@ -177,7 +187,7 @@
       </link>
       <joint name="rotor_fl_joint" type="revolute">
         <parent>base_link</parent><child>rotor_fl</child>
-        <axis><xyz>0 0 1</xyz><limit><lower>-1e+16</lower><upper>1e+16</upper></limit></axis>
+        <axis><xyz>0 0 1</xyz><limit><lower>-1e+16</lower><upper>1e+16</upper></limit><dynamics><damping>0.004</damping></dynamics></axis>
       </joint>
 
       <link name="rotor_fr">
@@ -189,7 +199,7 @@
       </link>
       <joint name="rotor_fr_joint" type="revolute">
         <parent>base_link</parent><child>rotor_fr</child>
-        <axis><xyz>0 0 1</xyz><limit><lower>-1e+16</lower><upper>1e+16</upper></limit></axis>
+        <axis><xyz>0 0 1</xyz><limit><lower>-1e+16</lower><upper>1e+16</upper></limit><dynamics><damping>0.004</damping></dynamics></axis>
       </joint>
 
       <link name="rotor_rl">
@@ -201,7 +211,7 @@
       </link>
       <joint name="rotor_rl_joint" type="revolute">
         <parent>base_link</parent><child>rotor_rl</child>
-        <axis><xyz>0 0 1</xyz><limit><lower>-1e+16</lower><upper>1e+16</upper></limit></axis>
+        <axis><xyz>0 0 1</xyz><limit><lower>-1e+16</lower><upper>1e+16</upper></limit><dynamics><damping>0.004</damping></dynamics></axis>
       </joint>
 
       <link name="rotor_rr">
@@ -213,7 +223,7 @@
       </link>
       <joint name="rotor_rr_joint" type="revolute">
         <parent>base_link</parent><child>rotor_rr</child>
-        <axis><xyz>0 0 1</xyz><limit><lower>-1e+16</lower><upper>1e+16</upper></limit></axis>
+        <axis><xyz>0 0 1</xyz><limit><lower>-1e+16</lower><upper>1e+16</upper></limit><dynamics><damping>0.004</damping></dynamics></axis>
       </joint>
 
       <!-- LiftDrag aerodynamics — 2 blades per rotor, matching official iris_with_ardupilot.
