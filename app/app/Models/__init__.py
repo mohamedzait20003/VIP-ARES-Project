@@ -1,4 +1,4 @@
-from Dynamic_Model import DroneParameters, Dynamic_Model
+from .Dynamic_Model import DroneParameters, Dynamic_Model
 
 __all__ = [
     "DroneParameters",

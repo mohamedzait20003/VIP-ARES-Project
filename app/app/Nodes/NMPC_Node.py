@@ -1,12 +1,13 @@
 import rclpy
 import numpy as np
-from rclpy.node import Node 
+from rclpy.node import Node
 from mavros_msgs.msg import AttitudeTarget
 from geometry_msgs.msg import PoseStamped, TwistStamped
 from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
 
 from app.Controllers import NMPC_Controller, Config
 from app.Models import DroneParameters, Dynamic_Model
+
 
 class DroneState:
     def __init__(self) -> None:
@@ -20,7 +21,7 @@ class DroneState:
     @property
     def is_ready(self) -> bool:
         return self._pose_ready and self._twist_ready
-    
+
     def update_pose(self, msg: PoseStamped) -> None:
         q = msg.pose.orientation
         self._position = np.array([
@@ -28,8 +29,8 @@ class DroneState:
             msg.pose.position.y,
             msg.pose.position.z,
         ])
-
-        self._euler = self._quat_to_euler(q.x, q.y, q.z, q.w)
+        # Correct quaternion order: w, x, y, z
+        self._euler = self._quat_to_euler(q.w, q.x, q.y, q.z)
         self._pose_ready = True
 
     def update_twist(self, msg: TwistStamped) -> None:
@@ -38,46 +39,44 @@ class DroneState:
             msg.twist.linear.y,
             msg.twist.linear.z,
         ])
-
         self._angular_vel = np.array([
             msg.twist.angular.x,
             msg.twist.angular.y,
             msg.twist.angular.z,
         ])
-
         self._twist_ready = True
 
     def get_state(self) -> np.ndarray:
         if not self.is_ready:
             raise ValueError("State is not ready yet")
-        
         return np.concatenate([
             self._position,
             self._velocity,
             self._euler,
             self._angular_vel,
         ])
-    
+
     @staticmethod
     def _quat_to_euler(qw: float, qx: float, qy: float, qz: float) -> np.ndarray:
-        roll = np.arctan2(2.0 * (qw * qx + qy * qz), 1.0 - 2.0 * (qx * qx + qy * qy))
+        roll  = np.arctan2(2.0 * (qw * qx + qy * qz), 1.0 - 2.0 * (qx * qx + qy * qy))
         pitch = np.arcsin(np.clip(2.0 * (qw * qy - qz * qx), -1.0, 1.0))
-        yaw = np.arctan2(2.0 * (qw * qz + qx * qy), 1.0 - 2.0 * (qy * qy + qz * qz))
+        yaw   = np.arctan2(2.0 * (qw * qz + qx * qy), 1.0 - 2.0 * (qy * qy + qz * qz))
         return np.array([roll, pitch, yaw])
-    
+
+
 class ReferenceTrajectory:
     def __init__(self, horizon: int, state_dim: int) -> None:
         self._horizon   = horizon
         self._state_dim = state_dim
 
     def hover_at(self, position: np.ndarray, yaw: float = 0.0) -> np.ndarray:
-        ref         = np.zeros((self._horizon + 1, self._state_dim))
-        ref[:, 0]   = position[0] 
-        ref[:, 1]   = position[1]
-        ref[:, 2]   = position[2]
-        ref[:, 8]   = yaw
+        ref       = np.zeros((self._horizon + 1, self._state_dim))
+        ref[:, 0] = position[0]
+        ref[:, 1] = position[1]
+        ref[:, 2] = position[2]
+        ref[:, 8] = yaw
         return ref
-    
+
 
 class NMPCNode(Node):
     _NODE_NAME = "nmpc_controller"
@@ -95,7 +94,7 @@ class NMPCNode(Node):
         self._controller   = NMPC_Controller(cfg, drone_params)
 
         self._target_position = np.array([0.0, 0.0, 1.5])
-        self.target_yaw = 0.0
+        self._target_yaw = 0.0
 
         sensor_qos = self._make_sensor_qos()
         self._setup_subscribers(sensor_qos)
@@ -121,7 +120,6 @@ class NMPCNode(Node):
 
     def _load_nmpc_config(self) -> Config:
         g = self.get_parameter
-
         return Config(
             horizon     = g('horizon').value,
             dt          = g('dt').value,
@@ -143,7 +141,7 @@ class NMPCNode(Node):
             history=HistoryPolicy.KEEP_LAST,
             depth=1,
         )
-    
+
     def _setup_subscribers(self, qos: QoSProfile) -> None:
         self.create_subscription(
             PoseStamped,
@@ -171,7 +169,6 @@ class NMPCNode(Node):
             10,
         )
 
-
     def _on_pose(self, msg: PoseStamped) -> None:
         self._state_buffer.update_pose(msg)
 
@@ -184,20 +181,18 @@ class NMPCNode(Node):
             msg.pose.position.y,
             msg.pose.position.z,
         ])
-
         q = msg.pose.orientation
         _, _, self._target_yaw = DroneState._quat_to_euler(
             q.w, q.x, q.y, q.z
         )
-
         self.get_logger().info(
             f'New target → pos={self._target_position}, yaw={self._target_yaw:.3f} rad'
         )
-    
+
     def _control_loop(self) -> None:
         if not self._state_buffer.is_ready:
             return
-        
+
         current_state = self._state_buffer.get_state()
         reference     = self._ref_provider.hover_at(
             self._target_position, self._target_yaw
@@ -224,7 +219,7 @@ class NMPCNode(Node):
         msg.thrust = float(
             np.clip(u_opt[0] / self._controller._cfg.thrust_max, 0.0, 1.0)
         )
-        self._attitude_pub.publish(msg)
+        self._cmd_pub.publish(msg)
 
 
 def main(args=None) -> None:

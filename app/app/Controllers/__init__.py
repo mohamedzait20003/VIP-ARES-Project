@@ -1,4 +1,4 @@
-from NMPC_Controller import Config, NMPC_Controller
+from .NMPC_Controller import Config, NMPC_Controller
 
 __all__ = [
     "Config",

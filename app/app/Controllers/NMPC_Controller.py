@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 import numpy as np
 import casadi as ca
 from dataclasses import dataclass
 from typing import Optional, Tuple
-from __future__ import annotations
 
 from app.Models import DroneParameters, Dynamic_Model
+
 
 @dataclass
 class Config:
@@ -50,31 +52,27 @@ class NMPC_Controller:
     def _validate_inputs(self, state: np.ndarray, traj: np.ndarray) -> None:
         if state.shape != (self._nx,):
             raise ValueError(f"Expected state shape ({self._nx},), got {state.shape}")
-        
+
         expected = (self._cfg.horizon + 1, self._nx)
         if traj.shape != expected:
             raise ValueError(f"Expected trajectory shape {expected}, got {traj.shape}")
-        
+
     def _make_Q(self) -> ca.DM:
         c = self._cfg
-
         diag = np.array([
             c.Q_pos, c.Q_pos, c.Q_pos,
             c.Q_vel, c.Q_vel, c.Q_vel,
             c.Q_angle, c.Q_angle, c.Q_angle,
             c.Q_rate, c.Q_rate, c.Q_rate,
         ])
-        
-        return ca.DM.diag(diag)
-    
+        return ca.DM(np.diag(diag))
+
     def _make_R(self) -> ca.DM:
         c = self._cfg
-
         diag = np.array([
             c.R_thrust, c.R_torque, c.R_torque, c.R_torque
         ])
-
-        return ca.DM.diag(diag)
+        return ca.DM(np.diag(diag))
 
     def _build_lbx(self) -> np.ndarray:
         N, nx, nu = self._cfg.horizon, self._nx, self._nu
@@ -84,7 +82,7 @@ class NMPC_Controller:
         u_lb       = np.full((nu, N), -self._cfg.torque_max)
         u_lb[0, :] = self._cfg.thrust_min
         return np.concatenate([x_lb.flatten(), u_lb.flatten()])
-    
+
     def _build_ubx(self) -> np.ndarray:
         N, nx, nu = self._cfg.horizon, self._nx, self._nu
         x_ub = np.full((nx, N + 1), np.inf)
@@ -93,7 +91,7 @@ class NMPC_Controller:
         u_ub       = np.full((nu, N), self._cfg.torque_max)
         u_ub[0, :] = self._cfg.thrust_max
         return np.concatenate([x_ub.flatten(), u_ub.flatten()])
-    
+
     def _build_warm_start(self) -> np.ndarray:
         N, nx, nu = self._cfg.horizon, self._nx, self._nu
 
@@ -106,14 +104,14 @@ class NMPC_Controller:
             u_ws = np.hstack([self._u_ws[:, 1:], self._u_ws[:, -1:]])
 
         return np.concatenate([x_ws.flatten(), u_ws.flatten()])
-    
+
     def _shift_warm_start(self, x_opt: np.ndarray, u_opt: np.ndarray) -> None:
         self._x_ws = x_opt
         self._u_ws = u_opt
-        
+
     def _pack_parameters(self, state: np.ndarray, traj: np.ndarray) -> np.ndarray:
         return np.concatenate([state, traj.flatten()])
-    
+
     def _unpack_solution(self, sol_vec: ca.DM) -> Tuple[np.ndarray, np.ndarray]:
         N, nx, nu = self._cfg.horizon, self._nx, self._nu
         arr    = np.array(sol_vec).flatten()
@@ -121,7 +119,7 @@ class NMPC_Controller:
         x_opt  = arr[:n_x].reshape(nx, N + 1)
         u_opt  = arr[n_x:].reshape(nu, N)
         return x_opt, u_opt
-    
+
     def _build_solver(self) -> Tuple[ca.Function, np.ndarray, np.ndarray]:
         N, nx, nu = self._cfg.horizon, self._nx, self._nu
 
@@ -137,11 +135,11 @@ class NMPC_Controller:
         x0_p = p[:nx]
         x_ref = p[nx:]
 
-        cost = ca.MX(0)
+        cost = ca.SX(0)
         constraints = [X[:, 0] - x0_p]
 
         for k in range(N):
-            ref_k =  x_ref[k*nx:(k+1)*nx]
+            ref_k = x_ref[k * nx:(k + 1) * nx]
             e_x = X[:, k] - ref_k
             e_u = U[:, k]
             cost += e_x.T @ Q @ e_x + e_u.T @ R @ e_u
@@ -149,7 +147,7 @@ class NMPC_Controller:
             x_next = self._dynamics.rk4_step(X[:, k], U[:, k], self._cfg.dt)
             constraints.append(X[:, k + 1] - x_next)
 
-        ref_N = x_ref[N*nx:(N+1)*nx]
+        ref_N = x_ref[N * nx:(N + 1) * nx]
         e_term = X[:, N] - ref_N
         cost += e_term.T @ P @ e_term
 
@@ -199,7 +197,7 @@ class NMPC_Controller:
         status = self._solver.stats()['return_status']
         if status not in ('Solve_Succeeded', 'Solved_To_Acceptable_Level'):
             raise RuntimeError(f'NMPC solver failed with status: {status}')
-        
+
         x_opt, u_opt = self._unpack_solution(solution['x'])
         self._shift_warm_start(x_opt, u_opt)
-        return u_opt[:, 0] 
+        return u_opt[:, 0]
