@@ -133,6 +133,124 @@
         <visual name="vis"><geometry><cylinder><radius>0.4</radius><length>4</length></cylinder></geometry><material><ambient>0.7 0.5 0.1 1</ambient><diffuse>0.8 0.6 0.1 1</diffuse></material></visual></link>
     </model>
 
+    <!-- ============================================================ -->
+    <!-- TERRAIN FOLLOWING COURSE                                     -->
+    <!-- Path: spawn(0,0) → slalom(X=8) → gate(X=10) → tunnel(X=22) -->
+    <!--       → ramp up(X=35-42) → platform(X=42-52) → ramp dn(X=52-59) -->
+    <!-- Drone flies at 2m AGL throughout                             -->
+    <!-- ============================================================ -->
+
+    <!-- Ground track: yellow path strip along Y=0 showing the route -->
+    <model name="track_strip"><static>true</static><pose>29.5 0 0.01 0 0 0</pose>
+      <link name="link">
+        <visual name="vis"><geometry><box><size>59 1.5 0.02</size></box></geometry>
+          <material><ambient>0.9 0.8 0.0 1</ambient><diffuse>1.0 0.9 0.0 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Ramp up: X=35 to X=42, rises from Z=0 to Z=2m (angle ~15.9 deg = 0.2783 rad) -->
+    <!-- Box along slope: sqrt(7^2 + 2^2) = 7.28m long, width 8m, thick 0.4m -->
+    <model name="terrain_ramp_up"><static>true</static><pose>38.5 0 1.0 0 -0.2783 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>7.28 8 0.4</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>7.28 8 0.4</size></box></geometry>
+          <material><ambient>0.72 0.60 0.35 1</ambient><diffuse>0.80 0.68 0.40 1</diffuse></material></visual>
+      </link>
+    </model>
+    <!-- Fill under ramp so no gap at base -->
+    <model name="terrain_ramp_up_fill"><static>true</static><pose>37.5 0 0.5 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>5 8 1.0</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>5 8 1.0</size></box></geometry>
+          <material><ambient>0.68 0.56 0.32 1</ambient><diffuse>0.76 0.64 0.38 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Elevated platform: X=42 to X=52, Z=0 to Z=2m solid block -->
+    <model name="terrain_platform"><static>true</static><pose>47 0 1.0 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>10 8 2.0</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>10 8 2.0</size></box></geometry>
+          <material><ambient>0.65 0.53 0.30 1</ambient><diffuse>0.74 0.62 0.36 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Ramp down: X=52 to X=59, falls from Z=2m to Z=0 -->
+    <model name="terrain_ramp_down"><static>true</static><pose>55.5 0 1.0 0 0.2783 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>7.28 8 0.4</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>7.28 8 0.4</size></box></geometry>
+          <material><ambient>0.72 0.60 0.35 1</ambient><diffuse>0.80 0.68 0.40 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="terrain_ramp_down_fill"><static>true</static><pose>56.5 0 0.5 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><box><size>5 8 1.0</size></box></geometry></collision>
+        <visual name="vis"><geometry><box><size>5 8 1.0</size></box></geometry>
+          <material><ambient>0.68 0.56 0.32 1</ambient><diffuse>0.76 0.64 0.38 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Waypoint poles: bright blue cylinders at 2m AGL along the path -->
+    <!-- Each pole = radius 0.05m, length 0.6m, positioned at drone flight height -->
+    <model name="wp_start"><static>true</static><pose>0 0 2.3 0 0 0</pose>
+      <link name="link">
+        <visual name="vis"><geometry><cylinder><radius>0.07</radius><length>0.6</length></cylinder></geometry>
+          <material><ambient>0.0 0.8 0.0 1</ambient><diffuse>0.0 1.0 0.0 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="wp_1"><static>true</static><pose>10 0 2.3 0 0 0</pose>
+      <link name="link">
+        <visual name="vis"><geometry><cylinder><radius>0.07</radius><length>0.6</length></cylinder></geometry>
+          <material><ambient>0.0 0.4 0.9 1</ambient><diffuse>0.0 0.5 1.0 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="wp_2"><static>true</static><pose>22 0 2.3 0 0 0</pose>
+      <link name="link">
+        <visual name="vis"><geometry><cylinder><radius>0.07</radius><length>0.6</length></cylinder></geometry>
+          <material><ambient>0.0 0.4 0.9 1</ambient><diffuse>0.0 0.5 1.0 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="wp_3"><static>true</static><pose>35 0 2.3 0 0 0</pose>
+      <link name="link">
+        <visual name="vis"><geometry><cylinder><radius>0.07</radius><length>0.6</length></cylinder></geometry>
+          <material><ambient>0.0 0.4 0.9 1</ambient><diffuse>0.0 0.5 1.0 1</diffuse></material></visual>
+      </link>
+    </model>
+    <!-- wp_4 and wp_5 are 2m above the platform surface (Z=2+2=4m) -->
+    <model name="wp_4"><static>true</static><pose>42 0 4.3 0 0 0</pose>
+      <link name="link">
+        <visual name="vis"><geometry><cylinder><radius>0.07</radius><length>0.6</length></cylinder></geometry>
+          <material><ambient>0.0 0.4 0.9 1</ambient><diffuse>0.0 0.5 1.0 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="wp_5"><static>true</static><pose>47 0 4.3 0 0 0</pose>
+      <link name="link">
+        <visual name="vis"><geometry><cylinder><radius>0.07</radius><length>0.6</length></cylinder></geometry>
+          <material><ambient>0.0 0.4 0.9 1</ambient><diffuse>0.0 0.5 1.0 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="wp_6"><static>true</static><pose>52 0 4.3 0 0 0</pose>
+      <link name="link">
+        <visual name="vis"><geometry><cylinder><radius>0.07</radius><length>0.6</length></cylinder></geometry>
+          <material><ambient>0.0 0.4 0.9 1</ambient><diffuse>0.0 0.5 1.0 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="wp_7"><static>true</static><pose>59 0 2.3 0 0 0</pose>
+      <link name="link">
+        <visual name="vis"><geometry><cylinder><radius>0.07</radius><length>0.6</length></cylinder></geometry>
+          <material><ambient>0.0 0.4 0.9 1</ambient><diffuse>0.0 0.5 1.0 1</diffuse></material></visual>
+      </link>
+    </model>
+    <!-- End marker: red pole -->
+    <model name="wp_end"><static>true</static><pose>65 0 2.3 0 0 0</pose>
+      <link name="link">
+        <visual name="vis"><geometry><cylinder><radius>0.07</radius><length>0.6</length></cylinder></geometry>
+          <material><ambient>0.9 0.0 0.0 1</ambient><diffuse>1.0 0.0 0.0 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- ============================================================ -->
     <!-- QUADROTOR - all motor/control plugins are INSIDE this model tag -->
     <model name="quadrotor">
       <pose>0 0 0.2 0 0 0</pose>
