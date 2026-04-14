@@ -272,14 +272,14 @@
           <always_on>true</always_on><update_rate>400</update_rate>
           <imu>
             <angular_velocity>
-              <x><noise type="gaussian"><mean>0</mean><stddev>0.00018</stddev></noise></x>
-              <y><noise type="gaussian"><mean>0</mean><stddev>0.00018</stddev></noise></y>
-              <z><noise type="gaussian"><mean>0</mean><stddev>0.00018</stddev></noise></z>
+              <x><noise type="none"/></x>
+              <y><noise type="none"/></y>
+              <z><noise type="none"/></z>
             </angular_velocity>
             <linear_acceleration>
-              <x><noise type="gaussian"><mean>0</mean><stddev>0.00078</stddev></noise></x>
-              <y><noise type="gaussian"><mean>0</mean><stddev>0.00078</stddev></noise></y>
-              <z><noise type="gaussian"><mean>0</mean><stddev>0.00078</stddev></noise></z>
+              <x><noise type="none"/></x>
+              <y><noise type="none"/></y>
+              <z><noise type="none"/></z>
             </linear_acceleration>
           </imu>
         </sensor>
