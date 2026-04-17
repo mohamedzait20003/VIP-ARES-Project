@@ -55,7 +55,7 @@ class NMPC_Controller:
 
         u_lb       = np.full((nu, N), -self._cfg.torque_max)
         u_lb[0, :] = self._cfg.thrust_min
-        return np.concatenate([x_lb.flatten(), u_lb.flatten()])
+        return np.concatenate([x_lb.flatten('F'), u_lb.flatten('F')])
 
     def _build_ubx(self) -> np.ndarray:
         N, nx, nu = self._cfg.horizon, self._nx, self._nu
@@ -64,7 +64,7 @@ class NMPC_Controller:
 
         u_ub       = np.full((nu, N), self._cfg.torque_max)
         u_ub[0, :] = self._cfg.thrust_max
-        return np.concatenate([x_ub.flatten(), u_ub.flatten()])
+        return np.concatenate([x_ub.flatten('F'), u_ub.flatten('F')])
 
     def _build_warm_start(self) -> np.ndarray:
         N, nx, nu = self._cfg.horizon, self._nx, self._nu

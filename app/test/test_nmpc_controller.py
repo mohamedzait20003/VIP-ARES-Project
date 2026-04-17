@@ -1,14 +1,14 @@
-# app/test/test_nmpc_controller.py
 import pytest
 import numpy as np
-from app.Controllers.NMPC_Controller import Config, NMPC_Controller
-from app.Models.Dynamic_Model import DroneParameters, Dynamic_Model
+from src.app.Config import NMPCConfig
+from src.app.Controllers import NMPC_Controller
+from src.app.Models.Dynamic_Model import DroneParameters, Dynamic_Model
 
 NX, NU, N = 12, 4, 20
 
 @pytest.fixture(scope="module")
 def controller():
-    return NMPC_Controller(Config(horizon=10, dt=0.1))
+    return NMPC_Controller(NMPCConfig(horizon=10, dt=0.1))
 
 @pytest.fixture
 def hover_state():

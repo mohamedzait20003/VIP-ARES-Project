@@ -123,7 +123,7 @@ source .venv/bin/activate
 Install project dependencies:
 
 ```bash
-pip install -r requirements.txt
+pip install -r app/requirements.txt
 ```
 
 > The virtual environment should be activated whenever running Python scripts in this project.  
@@ -145,7 +145,7 @@ git clone https://github.com/mohamedzait20003/VIP-ARES-Project.git ARES-Project
 cd ~/ARES-Project
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r app/requirements.txt
 ```
 
 ### 3. Initialize rosdep and install dependencies
@@ -240,13 +240,13 @@ Replace `/dev/ttyACM0` and baud rate with the values appropriate for your setup.
 
 ```
 ARES-Project/
-├── CMakeLists.txt       # Build configuration
-├── package.xml          # Package metadata and dependencies
-├── requirements.txt     # Python dependencies
-├── .venv/               # Python virtual environment (not committed)
-├── include/
-│   └── ARES-Project/    # C++ header files
-└── src/                 # C++ and Python source files
+├── app/                    # ROS 2 package
+│   ├── src/                # Package source (package.xml, setup.py, app/, launch/, resource/)
+│   ├── test/               # Pytest tests
+│   ├── pytest.ini          # Pytest configuration
+│   └── requirements.txt    # Python dependencies
+├── simulation/             # Gazebo world, SITL params, terrain, logs
+└── .venv/                  # Python virtual environment (not committed)
 ```
 
 ---

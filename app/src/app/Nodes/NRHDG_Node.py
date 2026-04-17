@@ -5,8 +5,9 @@ from mavros_msgs.msg import AttitudeTarget
 from geometry_msgs.msg import PoseStamped, TwistStamped
 from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
 
-from app.Controllers import NMPC_Controller, Config
-from app.Models import DroneParameters, Dynamic_Model
+from app.Config import NRHDGConfig
+from app.Controllers import NRHDG_Controller
+from app.Models import DroneParameters
 
 
 class DroneState:
@@ -29,7 +30,6 @@ class DroneState:
             msg.pose.position.y,
             msg.pose.position.z,
         ])
-        # Correct quaternion order: w, x, y, z
         self._euler = self._quat_to_euler(q.w, q.x, q.y, q.z)
         self._pose_ready = True
 
@@ -78,8 +78,8 @@ class ReferenceTrajectory:
         return ref
 
 
-class NMPCNode(Node):
-    _NODE_NAME = "nmpc_controller"
+class NRHDGNode(Node):
+    _NODE_NAME = "nrhdg_controller"
 
     def __init__(self) -> None:
         super().__init__(self._NODE_NAME)
@@ -87,11 +87,11 @@ class NMPCNode(Node):
         self._declare_ros_parameters()
 
         drone_params = DroneParameters()
-        cfg = self._load_nmpc_config()
+        cfg = self._load_nrhdg_config()
 
         self._state_buffer = DroneState()
         self._ref_provider = ReferenceTrajectory(cfg.horizon, 12)
-        self._controller   = NMPC_Controller(cfg, drone_params)
+        self._controller   = NRHDG_Controller(cfg, drone_params)
 
         self._target_position = np.array([0.0, 0.0, 1.5])
         self._target_yaw = 0.0
@@ -102,36 +102,47 @@ class NMPCNode(Node):
         self._timer = self.create_timer(cfg.dt, self._control_loop)
 
         self.get_logger().info(
-            f'{self._NODE_NAME} ready — horizon={cfg.horizon}, dt={cfg.dt}s'
+            f'{self._NODE_NAME} ready — horizon={cfg.horizon}, dt={cfg.dt}s, '
+            f'gamma={cfg.gamma}, w_max={cfg.w_max}, game_iters={cfg.game_iters}'
         )
 
     def _declare_ros_parameters(self) -> None:
-        self.declare_parameter('horizon',    20)
-        self.declare_parameter('dt',         0.05)
-        self.declare_parameter('Q_pos',      10.0)
-        self.declare_parameter('Q_vel',      1.0)
-        self.declare_parameter('Q_angle',    5.0)
-        self.declare_parameter('Q_rate',     0.5)
-        self.declare_parameter('R_thrust',   0.01)
-        self.declare_parameter('R_torque',   0.1)
-        self.declare_parameter('thrust_max', 30.0)
-        self.declare_parameter('torque_max', 2.0)
-        self.declare_parameter('angle_max',  0.52)
+        self.declare_parameter('horizon',         20)
+        self.declare_parameter('dt',              0.05)
+        self.declare_parameter('Q_pos',           10.0)
+        self.declare_parameter('Q_vel',           1.0)
+        self.declare_parameter('Q_angle',         5.0)
+        self.declare_parameter('Q_rate',          0.5)
+        self.declare_parameter('R_thrust',        0.01)
+        self.declare_parameter('R_torque',        0.1)
+        self.declare_parameter('thrust_max',      30.0)
+        self.declare_parameter('torque_max',      2.0)
+        self.declare_parameter('angle_max',       0.52)
+        self.declare_parameter('gamma',           2.0)
+        self.declare_parameter('w_max',           1.0)
+        self.declare_parameter('game_iters',      3)
+        self.declare_parameter('game_tol',        1e-3)
+        self.declare_parameter('solver_max_iter', 100)
 
-    def _load_nmpc_config(self) -> Config:
+    def _load_nrhdg_config(self) -> NRHDGConfig:
         g = self.get_parameter
-        return Config(
-            horizon     = g('horizon').value,
-            dt          = g('dt').value,
-            Q_pos       = g('Q_pos').value,
-            Q_vel       = g('Q_vel').value,
-            Q_angle     = g('Q_angle').value,
-            Q_rate      = g('Q_rate').value,
-            R_thrust    = g('R_thrust').value,
-            R_torque    = g('R_torque').value,
-            thrust_max  = g('thrust_max').value,
-            torque_max  = g('torque_max').value,
-            angle_max   = g('angle_max').value,
+        return NRHDGConfig(
+            horizon         = g('horizon').value,
+            dt              = g('dt').value,
+            Q_pos           = g('Q_pos').value,
+            Q_vel           = g('Q_vel').value,
+            Q_angle         = g('Q_angle').value,
+            Q_rate          = g('Q_rate').value,
+            R_thrust        = g('R_thrust').value,
+            R_torque        = g('R_torque').value,
+            thrust_max      = g('thrust_max').value,
+            torque_max      = g('torque_max').value,
+            angle_max       = g('angle_max').value,
+            gamma           = g('gamma').value,
+            w_max           = g('w_max').value,
+            game_iters      = g('game_iters').value,
+            game_tol        = g('game_tol').value,
+            solver_max_iter = g('solver_max_iter').value,
         )
 
     @staticmethod
@@ -157,7 +168,7 @@ class NMPCNode(Node):
         )
         self.create_subscription(
             PoseStamped,
-            '/ares/nmpc/target_position',
+            '/ares/nrhdg/target_position',
             self._on_target,
             10,
         )
@@ -201,7 +212,7 @@ class NMPCNode(Node):
         try:
             u_opt = self._controller.solve(current_state, reference)
         except (RuntimeError, ValueError) as exc:
-            self.get_logger().warn(f'NMPC solver issue: {exc}')
+            self.get_logger().warn(f'NRHDG solver issue: {exc}')
             return
 
         self._publish_attitude_target(u_opt)
@@ -224,7 +235,7 @@ class NMPCNode(Node):
 
 def main(args=None) -> None:
     rclpy.init(args=args)
-    node = NMPCNode()
+    node = NRHDGNode()
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
