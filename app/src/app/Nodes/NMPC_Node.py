@@ -89,6 +89,7 @@ class NMPCNode(Node):
         drone_params = DroneParameters()
         cfg = self._load_nmpc_config()
 
+        self._drone_params = drone_params
         self._state_buffer = DroneState()
         self._ref_provider = ReferenceTrajectory(cfg.horizon, 12)
         self._controller   = NMPC_Controller(cfg, drone_params)
@@ -204,17 +205,23 @@ class NMPCNode(Node):
             self.get_logger().warn(f'NMPC solver issue: {exc}')
             return
 
-        self._publish_attitude_target(u_opt)
+        self._publish_attitude_target(u_opt, current_state)
 
-    def _publish_attitude_target(self, u_opt: np.ndarray) -> None:
+    def _publish_attitude_target(self, u_opt: np.ndarray, current_state: np.ndarray) -> None:
         msg                 = AttitudeTarget()
         msg.header.stamp    = self.get_clock().now().to_msg()
         msg.header.frame_id = 'base_link'
         msg.type_mask       = AttitudeTarget.IGNORE_ATTITUDE
 
-        msg.body_rate.x = float(u_opt[1])
-        msg.body_rate.y = float(u_opt[2])
-        msg.body_rate.z = float(u_opt[3])
+        # u_opt[1..3] are torques (N·m); convert to rate commands (rad/s)
+        # via: ω_cmd = ω_current + (τ / I) * dt
+        p = self._drone_params
+        dt = self._controller._cfg.dt
+        omega = current_state[9:12]  # current [p, q, r] in rad/s
+
+        msg.body_rate.x = float(omega[0] + (u_opt[1] / p.Ixx) * dt)
+        msg.body_rate.y = float(omega[1] + (u_opt[2] / p.Iyy) * dt)
+        msg.body_rate.z = float(omega[2] + (u_opt[3] / p.Izz) * dt)
 
         msg.thrust = float(
             np.clip(u_opt[0] / self._controller._cfg.thrust_max, 0.0, 1.0)

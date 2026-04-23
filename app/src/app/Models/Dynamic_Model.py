@@ -7,12 +7,12 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class DroneParameters:
-    # Match SDF inertial values
+    # Match SDF inertial values (scaled 1.5kg iris → 1.95kg, factor 1.3)
     mass: float = 1.95
     gravity: float = 9.81
-    Ixx: float = 0.0347563
-    Iyy: float = 0.0458929
-    Izz: float = 0.0700
+    Ixx: float = 0.0451832
+    Iyy: float = 0.0596608
+    Izz: float = 0.0910
     thrust_max: float = 30.0
     torque_max: float = 2.0
 
