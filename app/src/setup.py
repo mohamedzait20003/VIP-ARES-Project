@@ -1,6 +1,6 @@
-from setuptools import find_packages, setup
 import os
 from glob import glob
+from setuptools import find_packages, setup
 
 package_name = 'app'
 
@@ -12,10 +12,8 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        # Install launch files
         (os.path.join('share', package_name, 'launch'),
             glob('launch/*.launch.py')),
-        # Install SDF world file
         (os.path.join('share', package_name, 'worlds'),
             ['../../simulation/ares_alex_default_world.sdf']),
     ],
@@ -32,8 +30,9 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'nmpc_node  = app.Nodes.NMPC_Node:main',
-            'nrhdg_node = app.Nodes.NRHDG_Node:main',
+            'nmpc_node           = app.Nodes.NMPC_Node:main',
+            'nrhdg_node          = app.Nodes.NRHDG_Node:main',
+            'metrics_logger_node = app.Nodes.Metrics_Logger_Node:main',
         ],
     },
 )

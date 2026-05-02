@@ -1,13 +1,15 @@
+import time
 import rclpy
 import numpy as np
 from rclpy.node import Node
 from mavros_msgs.msg import AttitudeTarget
+from std_msgs.msg import Float64MultiArray
 from geometry_msgs.msg import PoseStamped, TwistStamped
 from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
 
 from app.Config import NRHDGConfig
-from app.Controllers import NRHDG_Controller
 from app.Models import DroneParameters
+from app.Controllers import NRHDG_Controller
 
 
 class DroneState:
@@ -179,6 +181,11 @@ class NRHDGNode(Node):
             '/mavros/setpoint_raw/attitude',
             10,
         )
+        self._metrics_pub = self.create_publisher(
+            Float64MultiArray,
+            '/ares/metrics/nrhdg',
+            10,
+        )
 
     def _on_pose(self, msg: PoseStamped) -> None:
         self._state_buffer.update_pose(msg)
@@ -209,13 +216,41 @@ class NRHDGNode(Node):
             self._target_position, self._target_yaw
         )
 
+        t0 = time.perf_counter()
         try:
-            u_opt = self._controller.solve(current_state, reference)
+            u_opt     = self._controller.solve(current_state, reference)
+            solver_ok = 1.0
         except (RuntimeError, ValueError) as exc:
             self.get_logger().warn(f'NRHDG solver issue: {exc}')
+            self._publish_metrics(current_state, np.zeros(4), 0.0,
+                                  (time.perf_counter() - t0) * 1e3)
             return
+        solve_ms = (time.perf_counter() - t0) * 1e3
 
         self._publish_attitude_target(u_opt)
+        self._publish_metrics(current_state, u_opt, solver_ok, solve_ms)
+
+    def _publish_metrics(self, state: np.ndarray, u: np.ndarray,
+                         solver_ok: float, solve_ms: float) -> None:
+        pos_err = state[:3] - self._target_position
+        vel_err = state[3:6]
+        ang_ref = np.array([0.0, 0.0, self._target_yaw])
+        ang_err = state[6:9] - ang_ref
+        thrust_norm = float(np.clip(u[0] / self._controller._cfg.thrust_max, 0.0, 1.0))
+
+        msg      = Float64MultiArray()
+        msg.data = [
+            self.get_clock().now().nanoseconds * 1e-9,
+            float(pos_err[0]), float(pos_err[1]), float(pos_err[2]),
+            float(np.linalg.norm(pos_err)),
+            float(np.linalg.norm(vel_err)),
+            float(np.linalg.norm(ang_err)),
+            solve_ms,
+            thrust_norm,
+            float(np.linalg.norm(u[1:4])),
+            solver_ok,
+        ]
+        self._metrics_pub.publish(msg)
 
     def _publish_attitude_target(self, u_opt: np.ndarray) -> None:
         msg                 = AttitudeTarget()

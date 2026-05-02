@@ -1,7 +1,7 @@
 """
 ARES Simulation Launch File
 ============================
-Starts: Gazebo (with ares_alex_default_world.sdf) + MAVROS + NMPC node
+Starts: Gazebo (with ares_alex_default_world.sdf) + MAVROS + selected controller + metrics logger
 
 Prerequisites:
   1. ardupilot_gazebo plugin installed and on GZ_SIM_SYSTEM_PLUGIN_PATH
@@ -15,26 +15,32 @@ Prerequisites:
        sudo apt install ros-jazzy-mavros ros-jazzy-mavros-extras
 
 Usage:
-  ros2 launch app ares_sim.launch.py
+  ros2 launch app ares_sim.launch.py                      # NMPC (default)
+  ros2 launch app ares_sim.launch.py controller:=nmpc
+  ros2 launch app ares_sim.launch.py controller:=nrhdg
 
 Optional arguments:
-  fcu_url:=<url>   FCU connection URL (default: udp://127.0.0.1:14550@14555)
-  world:=<path>    Absolute path to SDF world file (default: auto-detected)
+  controller:=<nmpc|nrhdg>   Controller to run (default: nmpc)
+  fcu_url:=<url>             FCU connection URL (default: tcp://127.0.0.1:5762)
 """
 
 import os
-from ament_index_python.packages import get_package_share_directory
-from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, ExecuteProcess, SetEnvironmentVariable, TimerAction
-from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
+from launch import LaunchDescription
+from launch.conditions import IfCondition
+from ament_index_python.packages import get_package_share_directory
+from launch.substitutions import LaunchConfiguration, PythonExpression
+from launch.actions import DeclareLaunchArgument, SetEnvironmentVariable, TimerAction
 
 
 def generate_launch_description():
     pkg_share = get_package_share_directory('app')
 
-    # Default world path — installed via setup.py data_files
-    default_world = os.path.join(pkg_share, 'worlds', 'ares_alex_default_world.sdf')
+    controller_arg = DeclareLaunchArgument(
+        'controller',
+        default_value='nmpc',
+        description='Controller to run: nmpc or nrhdg',
+    )
 
     fcu_url_arg = DeclareLaunchArgument(
         'fcu_url',
@@ -42,7 +48,6 @@ def generate_launch_description():
         description='ArduPilot SITL MAVLink connection URL',
     )
 
-    # Ensure Gazebo can find the ArduPilotPlugin regardless of shell env
     ardupilot_plugin_path = SetEnvironmentVariable(
         name='GZ_SIM_SYSTEM_PLUGIN_PATH',
         value=os.path.join(os.path.expanduser('~'), 'ardupilot_gazebo', 'build'),
@@ -60,7 +65,6 @@ def generate_launch_description():
             'target_system_id': 1,
             'target_component_id': 1,
             'fcu_protocol': 'v2.0',
-            # Only load plugins we need — avoids type-conflict crashes on Jazzy
             'plugin_allowlist': [
                 'sys_status',
                 'local_position',
@@ -71,8 +75,14 @@ def generate_launch_description():
         }],
     )
 
-    # --- NMPC controller node ---
-    # Delayed slightly to allow MAVROS to connect before the control loop starts
+    use_nmpc  = IfCondition(PythonExpression(
+        ["'", LaunchConfiguration('controller'), "' == 'nmpc'"]
+    ))
+    use_nrhdg = IfCondition(PythonExpression(
+        ["'", LaunchConfiguration('controller'), "' == 'nrhdg'"]
+    ))
+
+    # --- NMPC controller node (launched when controller:=nmpc) ---
     nmpc_node = TimerAction(
         period=5.0,
         actions=[
@@ -81,6 +91,7 @@ def generate_launch_description():
                 executable='nmpc_node',
                 name='nmpc_controller',
                 output='screen',
+                condition=use_nmpc,
                 parameters=[{
                     'horizon':    20,
                     'dt':         0.05,
@@ -98,9 +109,60 @@ def generate_launch_description():
         ],
     )
 
+    # --- NRHDG controller node (launched when controller:=nrhdg) ---
+    nrhdg_node = TimerAction(
+        period=5.0,
+        actions=[
+            Node(
+                package='app',
+                executable='nrhdg_node',
+                name='nrhdg_controller',
+                output='screen',
+                condition=use_nrhdg,
+                parameters=[{
+                    'horizon':         20,
+                    'dt':              0.05,
+                    'Q_pos':           10.0,
+                    'Q_vel':           1.0,
+                    'Q_angle':         5.0,
+                    'Q_rate':          0.5,
+                    'R_thrust':        0.01,
+                    'R_torque':        0.1,
+                    'thrust_max':      30.0,
+                    'torque_max':      2.0,
+                    'angle_max':       0.52,
+                    'gamma':           2.0,
+                    'w_max':           1.0,
+                    'game_iters':      3,
+                    'game_tol':        1e-3,
+                    'solver_max_iter': 100,
+                }],
+            )
+        ],
+    )
+
+    # --- Metrics logger: always launched, subscribes to active controller topic ---
+    metrics_logger = TimerAction(
+        period=5.5,
+        actions=[
+            Node(
+                package='app',
+                executable='metrics_logger_node',
+                name='metrics_logger',
+                output='screen',
+                parameters=[{
+                    'controller': LaunchConfiguration('controller'),
+                }],
+            )
+        ],
+    )
+
     return LaunchDescription([
         ardupilot_plugin_path,
+        controller_arg,
         fcu_url_arg,
         mavros_node,
         nmpc_node,
+        nrhdg_node,
+        metrics_logger,
     ])

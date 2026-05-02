@@ -13,8 +13,9 @@ pyserial>=3.5
 # Computer vision (if used for perception tasks)
 opencv-python>=4.8.0
 
-# Plotting / debugging utilities
+# Plotting / debugging utilities and simulation analysis
 matplotlib>=3.7.0
+pandas>=2.0.0
 
 # Nonlinear optimization (used by NMPC controller)
 casadi>=3.6.0
