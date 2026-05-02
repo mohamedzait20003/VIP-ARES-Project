@@ -221,10 +221,9 @@ class NMPCNode(Node):
         self._publish_attitude_target(u_opt, current_state)
         self._publish_metrics(current_state, u_opt, solver_ok, solve_ms)
 
-    def _publish_metrics(self, state: np.ndarray, u: np.ndarray,
-                         solver_ok: float, solve_ms: float) -> None:
+    def _publish_metrics(self, state: np.ndarray, u: np.ndarray, solver_ok: float, solve_ms: float) -> None:
         pos_err = state[:3] - self._target_position
-        vel_err = state[3:6]                                   # ref vel = 0
+        vel_err = state[3:6]
         ang_ref = np.array([0.0, 0.0, self._target_yaw])
         ang_err = state[6:9] - ang_ref
         thrust_norm = float(np.clip(u[0] / self._controller._cfg.thrust_max, 0.0, 1.0))

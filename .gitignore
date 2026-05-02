@@ -7,3 +7,12 @@ venv/
 __pycache__/
 .vscode/
 
+# SITL auto-generated artifacts
+logs/
+terrain/
+simulation/eeprom.bin
+simulation/mav.parm
+simulation/mav.tlog
+simulation/mav.tlog.raw
+simulation/logs/
+simulation/terrain/
