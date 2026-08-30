@@ -1,4 +1,4 @@
-# ARES-Project
+# Senior Design Project (AEROX)
 
 **Autonomous Drone Control System** built on ROS2 and ArduPilot.
 
